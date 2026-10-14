@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI 魔法翻译官 · 教学汇报</title>
+<style>
+:root{
+  --ink:#1a1d24; --ink2:#41485a; --mut:#6b7486;
+  --pri:#5a6bff; --vio:#8b5cf6; --pin:#ec4899; --gre:#10a37f; --amb:#f59e0b;
+  --soft:#f3f0ff; --soft2:#eef2ff; --line:#e6e9f2;
+  --bg:#f7f8fc;
+  --sc:1;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  font-family:system-ui,-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  color:var(--ink);overflow:hidden;
+}
+.stage{position:fixed;inset:0;display:grid;place-items:center}
+.deck{width:1280px;height:720px;position:relative;transform:scale(var(--sc));transform-origin:center center}
+.slide{
+  position:absolute;inset:0;opacity:0;visibility:hidden;
+  transition:opacity .32s ease;
+  padding:62px 76px 66px;display:flex;flex-direction:column;
+  background:
+    radial-gradient(1100px 620px at 12% -12%,#e8ecff 0%,transparent 62%),
+    radial-gradient(900px 520px at 98% 4%,#f6e9ff 0%,transparent 58%),
+    #fbfcff;
+}
+.slide.on{opacity:1;visibility:visible}
+.kicker{font-size:13px;font-weight:700;letter-spacing:.16em;color:var(--pri);margin-bottom:14px}
+h2{font-size:40px;line-height:1.22;letter-spacing:-.01em;margin-bottom:8px;font-weight:800}
+.sub{font-size:18px;color:var(--mut);line-height:1.7;margin-bottom:26px}
+.body{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center}
+.row{display:flex;gap:18px}
+.g2>.c{flex:1}
+.grid{display:grid;gap:16px}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g5{grid-template-columns:repeat(5,1fr)}
+.c{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 20px;box-shadow:0 6px 20px -12px rgba(23,32,63,.18)}
+.c .lb{font-size:12.5px;font-weight:700;letter-spacing:.08em;color:var(--pri);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.c .lb .dot{width:7px;height:7px;border-radius:50%;background:var(--pri)}
+.c p{font-size:15.5px;line-height:1.72;color:var(--ink2)}
+.c b{color:var(--ink)}
+.q{font-size:20px;line-height:1.62}
+.num{font-size:52px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.num small{font-size:18px;font-weight:600;color:var(--mut);margin-left:4px}
+.tag{display:inline-block;font-size:12.5px;padding:5px 11px;border-radius:999px;background:var(--soft2);color:var(--pri);font-weight:600;margin:0 6px 6px 0}
+/* cover */
+.cover{justify-content:center;align-items:flex-start;text-align:left}
+.cover h1{font-size:66px;line-height:1.1;font-weight:800;letter-spacing:-.02em;margin-bottom:18px}
+.cover .grad{background:linear-gradient(100deg,var(--pri),var(--vio) 60%,var(--pin));-webkit-background-clip:text;background-clip:text;color:transparent}
+.cover .lead{font-size:21px;color:var(--ink2);line-height:1.75;max-width:760px;margin-bottom:30px}
+.badges{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:36px}
+.badge{background:#fff;border:1px solid var(--line);padding:9px 16px;border-radius:999px;font-size:14.5px;color:var(--ink2);box-shadow:0 4px 14px -10px rgba(23,32,63,.2)}
+.badge b{color:var(--ink)}
+/* mock */
+.mock{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 14px 34px -22px rgba(23,32,63,.35)}
+.mline{height:9px;border-radius:6px;background:#eef1f8;margin-bottom:10px}
+.tw{display:flex;gap:8px;margin-bottom:16px}
+.tw i{width:10px;height:10px;border-radius:50%;background:#e4e7f0;display:block}
+.tw i:first-child{background:#ff6058}.tw i:nth-child(2){background:#ffbd2e}.tw i:nth-child(3){background:#28ca42}
+.chat{display:flex;flex-direction:column;gap:12px}
+.bub{max-width:82%;padding:12px 15px;border-radius:14px;font-size:15px;line-height:1.6}
+.bub.s{align-self:flex-start;background:var(--soft2);border:1px solid #dfe4ff}
+.bub.a{align-self:flex-end;background:linear-gradient(100deg,var(--pri),var(--vio));color:#fff}
+.opt{border:1px solid var(--line);border-radius:12px;padding:11px 14px;font-size:15px;margin-bottom:9px;display:flex;gap:10px;align-items:center;background:#fff}
+.opt.ok{border-color:#34d399;background:#e9fbf3}
+.opt b{color:var(--pri)}
+.pill{display:inline-block;padding:7px 13px;border-radius:999px;font-size:13.5px;border:1px solid var(--line);background:#fff;margin:0 7px 7px 0}
+.pill.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.bar2{height:8px;border-radius:6px;background:#eef1f8;overflow:hidden;margin-top:9px}
+.bar2 i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--pri),var(--vio))}
+/* vs */
+.vs{display:grid;grid-template-columns:1fr 60px 1fr;gap:8px;align-items:center}
+.vs .mid{text-align:center;font-size:22px;color:var(--mut);font-weight:800}
+.bad{border-color:#fad9dd;background:#fff7f8}
+.bad .lb{color:#e1566f}.bad .dot{background:#e1566f}
+.good{border-color:#cfeee2;background:#f6fdfa}
+.good .lb{color:var(--gre)}.good .dot{background:var(--gre)}
+/* timeline */
+.time{display:flex;gap:6px;align-items:stretch;margin-top:6px}
+.time div{flex:1;border-radius:10px;padding:12px 8px;text-align:center;color:#fff;font-size:13px;line-height:1.5}
+.time div span{display:block;font-weight:800;font-size:16px;margin-bottom:3px}
+/* hud */
+.bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--pri),var(--vio) 60%,var(--pin));z-index:50;transition:width .28s ease}
+.hud{position:fixed;bottom:14px;right:18px;display:flex;align-items:center;gap:10px;z-index:50;font-size:13px;color:var(--mut)}
+.hud button{border:1px solid var(--line);background:#fff;color:var(--ink2);border-radius:9px;padding:6px 12px;cursor:pointer;font-size:13px}
+.hud button:hover{border-color:var(--pri);color:var(--pri)}
+.tip{position:fixed;bottom:14px;left:18px;font-size:12.5px;color:#9aa2b5;z-index:50}
+@media print{
+  body{overflow:visible;background:#fff}
+  .stage{position:static;display:block}
+  .deck{transform:none!important;width:1280px;height:auto}
+  .slide{position:relative;inset:auto;opacity:1!important;visibility:visible!important;display:block!important;page-break-after:always;border-radius:0}
+  .bar,.hud,.tip{display:none}
+}
+</style>
+</head>
+<body>
+<div class="bar" id="bar"></div>
+<div class="stage"><div class="deck" id="deck">
+
+<!-- 1 封面 -->
+<section class="slide on">
+  <div class="body cover">
+    <div class="kicker">中小学 AI 名词通识学习工具 · 项目汇报</div>
+    <h1>《AI 魔法翻译官》<br><span class="grad">把 AI 名词翻译成人话</span></h1>
+    <p class="lead">不是一本词典，而是一个「名词翻译机 + 场景模拟器」——把抽象的英文缩写翻译成孩子听得懂的话，把陌生的名词放回真实的教学场景里。</p>
+    <div class="badges">
+      <span class="badge">平台：<b>WorkBuddy</b></span>
+      <span class="badge">形态：<b>单文件网页 · 双击即开</b></span>
+      <span class="badge">面向：<b>小学高年级 · 初中</b></span>
+      <span class="badge">词条：<b>131 条</b></span>
+    </div>
+    <div><span class="tag">在线体验 ai-term-learning.app.workbuddy.host</span></div>
+  </div>
+</section>
+
+<!-- 2 痛点 -->
+<section class="slide">
+  <div class="kicker">01 · 我们发现了什么</div>
+  <h2>中小学 AI 课最大的难点，不是算法，是“名词天书”</h2>
+  <p class="sub">我们做的第一件事，不是写代码，是把课堂上的真实困难一条条列出来。</p>
+  <div class="body">
+    <div class="grid g4" style="margin-bottom:22px">
+      <div class="c"><div class="lb"><span class="dot"></span>概念太抽象</div><p>定义套定义，学生听完只会念，说不出<b>它到底能干嘛</b>。</p></div>
+      <div class="c"><div class="lb"><span class="dot"></span>英文缩写太多</div><p>AI / AGI / Agent 长得像，记不住也分不清。</p></div>
+      <div class="c"><div class="lb"><span class="dot"></span>不知道用在哪</div><p>背完定义还是不知道什么场合该提这个词。</p></div>
+      <div class="c"><div class="lb"><span class="dot"></span>老师不好讲</div><p>缺一条能带全班往前走的主线，备课成本高。</p></div>
+    </div>
+    <div class="c" style="border-color:#ecd9ff;background:linear-gradient(100deg,#f7f4ff,#fdf9ff)">
+      <p class="q" style="margin:0">一句话：<b>学生不是学不会，是没兴趣。</b>而兴趣的开关，往往是“这个词跟我有什么关系”。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3 理念 -->
+<section class="slide">
+  <div class="kicker">02 · 核心教学理念</div>
+  <h2>所以，它不是词典</h2>
+  <p class="sub">同一个知识有两种教法，我们选了右边那种。</p>
+  <div class="body">
+    <div class="vs">
+      <div class="c bad">
+        <div class="lb"><span class="dot"></span>传统做法：名词表 + 背诵</div>
+        <p><b>LLM：</b>大语言模型（Large Language Model），一类基于海量文本训练的深度学习模型……</p>
+        <p style="margin-top:12px;color:#9aa2b5">结果：学生抄完就忘，第二天全还给老师。</p>
+      </div>
+      <div class="mid">→</div>
+      <div class="c good">
+        <div class="lb"><span class="dot"></span>我们的做法：翻译 + 场景</div>
+        <p><b>LLM：</b>读过海量文字、特别会“接话”的超级大脑。</p>
+        <p style="margin-top:12px">再配一个真实场景：“你想让 AI 帮你续写作文梗概，该用它的哪项本事？”</p>
+        <p style="margin-top:12px;color:var(--gre)"><b>记住的标准不是会背，是能用。</b></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 总览 -->
+<section class="slide">
+  <div class="kicker">03 · 产品总览</div>
+  <h2>五个板块，一条主线</h2>
+  <p class="sub">从“不想学”到“会用”，每一步都有对应的入口。</p>
+  <div class="body">
+    <div class="grid g5">
+      <div class="c"><div class="lb"><span class="dot"></span>名词卡池</div><p><b>先引起兴趣。</b>卡池摇一摇抽出一张卡，一句话讲清一个词。</p></div>
+      <div class="c"><div class="lb"><span class="dot"></span>学习主线</div><p><b>给一条路。</b>四个单元 131 词，学到 70% 自动解锁下一站。</p></div>
+      <div class="c"><div class="lb"><span class="dot"></span>名词翻译机</div><p><b>解决“是什么”。</b>输入名词，给人话解释 + 真实场景举例。</p></div>
+      <div class="c"><div class="lb"><span class="dot"></span>场景配对</div><p><b>解决“用在哪”。</b>给真实场景，选该用的名词，答错讲原因。</p></div>
+      <div class="c"><div class="lb"><span class="dot"></span>名词图鉴</div><p><b>随时可查。</b>分类 / 等级检索、收藏、查看掌握进度。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 卡池 -->
+<section class="slide">
+  <div class="kicker">04 · 板块一</div>
+  <h2>首页名词卡池：把名词变成值得抽的一张卡</h2>
+  <p class="sub">每个词条都配了属于自己的卡通形象，配一句“人话”解释。</p>
+  <div class="body">
+    <div class="row g2">
+      <div class="mock" style="flex:1.15">
+        <div class="tw"><i></i><i></i><i></i></div>
+        <div style="display:flex;gap:14px;align-items:center;margin-bottom:14px">
+          <div style="width:96px;height:96px;border-radius:22px;background:linear-gradient(135deg,#ffe9f3,#e9edff);display:grid;place-items:center;font-size:44px">🧠</div>
+          <div>
+            <div style="font-size:24px;font-weight:800">大语言模型</div>
+            <div style="color:var(--mut);font-size:14px">LLM · 入门</div>
+          </div>
+        </div>
+        <div class="mline" style="width:100%"></div>
+        <div class="mline" style="width:76%"></div>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <span class="pill on">摇一摇，抽一张</span><span class="pill">自动轮播 开</span>
+        </div>
+      </div>
+      <div class="c" style="flex:1">
+        <div class="lb"><span class="dot"></span>为什么做成“抽卡”</div>
+        <p>· <b>随机性</b>制造期待感，比列表更愿意点开</p>
+        <p style="margin-top:10px">· 一次只看一个词，<b>降低认知负荷</b></p>
+        <p style="margin-top:10px">· 支持自动轮播，<b>课间大屏连着放</b>就是很好的环境熏陶</p>
+        <p style="margin-top:10px">· 抽到的词可标记“学会了”，会进入<b>记忆复习队列</b></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 主线 -->
+<section class="slide">
+  <div class="kicker">05 · 板块二</div>
+  <h2>学习主线：四个单元，一路走到能开口聊</h2>
+  <p class="sub">不要求学生自己挑词，跟着主线走完四站。</p>
+  <div class="body">
+    <div class="grid g4" style="margin-bottom:18px">
+      <div class="c"><div class="lb"><span class="dot" style="background:var(--pri)"></span>第一单元</div><p style="font-size:17px"><b>AI 到底是什么</b></p><p style="margin-top:8px;color:var(--mut)">35 词 · 打地基</p><div class="bar2"><i style="width:100%"></i></div></div>
+      <div class="c"><div class="lb"><span class="dot" style="background:var(--vio)"></span>第二单元</div><p style="font-size:17px"><b>怎么把话说明白</b></p><p style="margin-top:8px;color:var(--mut)">35 词 · 上手用</p><div class="bar2"><i style="width:72%"></i></div></div>
+      <div class="c"><div class="lb"><span class="dot" style="background:var(--pin)"></span>第三单元</div><p style="font-size:17px"><b>让它自己干活</b></p><p style="margin-top:8px;color:var(--mut)">35 词 · 真动手</p><div class="bar2"><i style="width:38%"></i></div></div>
+      <div class="c"><div class="lb"><span class="dot" style="background:var(--amb)"></span>第四单元</div><p style="font-size:17px"><b>它是在哪里造出来的</b></p><p style="margin-top:8px;color:var(--mut)">26 词 · 安全与伦理</p><div class="bar2"><i style="width:14%"></i></div></div>
+    </div>
+    <div class="c" style="border-color:#ecd9ff;background:linear-gradient(100deg,#f7f4ff,#fdf9ff)">
+      <p style="margin:0;font-size:16px">每单元开头写明「学完这一单元，你会______」，每条词标有 <b>入门 / 进阶</b> 等级；<b>学到 70% 自动解锁下一单元</b>，既给成就感，也防止跨度太大跟不上。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 7 翻译机 -->
+<section class="slide">
+  <div class="kicker">06 · 板块三</div>
+  <h2>名词翻译机：把“RAG”讲成一句人话</h2>
+  <p class="sub">输入英文或中文，给的永远不是百科式定义，而是比喻 + 真实场景。</p>
+  <div class="body">
+    <div class="row g2">
+      <div class="mock" style="flex:1.1">
+        <div class="tw"><i></i><i></i><i></i></div>
+        <div class="chat">
+          <div class="bub s">老师，RAG 是什么？</div>
+          <div class="bub a">就是让 AI <b>先查资料再开口</b>。好比写作文前先去图书馆翻了几本书，而不是凭记忆硬编。</div>
+          <div class="bub s">听起来像知识库？</div>
+          <div class="bub a">知识库是<b>那排书架</b>，RAG 是<b>“先去书架查、查完再动笔”这套动作</b>。</div>
+        </div>
+      </div>
+      <div class="c" style="flex:1">
+        <div class="lb"><span class="dot"></span>每一条回答都包含</div>
+        <p>· 一句话人话解释</p>
+        <p style="margin-top:9px">· 一段展开讲解（它解决什么问题）</p>
+        <p style="margin-top:9px">· 真实场景举例（它在具体课程、具体生活里怎么用）</p>
+        <p style="margin-top:9px">· 难度等级 + 所属分类标签</p>
+        <p style="margin-top:9px">· 一张为该概念做的配图</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 场景配对 -->
+<section class="slide">
+  <div class="kicker">07 · 板块四</div>
+  <h2>场景配对：从“知道是什么”到“知道用在哪”</h2>
+  <p class="sub">每局随机 10 题。答错才会显示原因——错的那道题比对着的那道更值钱。</p>
+  <div class="body">
+    <div class="row g2">
+      <div class="mock" style="flex:1.2">
+        <div class="tw"><i></i><i></i><i></i></div>
+        <div style="font-size:17px;font-weight:700;margin-bottom:14px;line-height:1.55">场景：我想让 AI 根据我们班的教材回答关于恐龙的问题，<b>不能瞎编</b>。</div>
+        <div class="opt"><b>A.</b> 插件</div>
+        <div class="opt ok"><b>B.</b> 知识库 ✓</div>
+        <div class="opt"><b>C.</b> 提示词</div>
+        <div style="margin-top:14px;background:#f6fdfa;border:1px solid #cfeee2;border-radius:12px;padding:11px 13px;font-size:14.5px;color:#0b7a5f">答对啦！<b>知识库</b>就是 AI 的“专属参考书”，把教材喂给它，它就不敢乱说了。</div>
+      </div>
+      <div class="c" style="flex:1">
+        <div class="lb"><span class="dot"></span>设计要点</div>
+        <p>· <b>题面是真实场景</b>，不是名词解释</p>
+        <p style="margin-top:9px">· 每局随机抽题，重做不重复</p>
+        <p style="margin-top:9px">· 连对有额外奖励，答错给<b>为什么错</b></p>
+        <p style="margin-top:9px">· 结算页可回看错题，<b>直接对接复盘环节</b></p>
+        <p style="margin-top:9px">· 老师可把它当作 5 分钟课堂小测验</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 图鉴 -->
+<section class="slide">
+  <div class="kicker">08 · 板块五</div>
+  <h2>名词图鉴：想找的时候，一秒能找到</h2>
+  <p class="sub">131 条全部可检索，并按分类显示掌握进度。</p>
+  <div class="body">
+    <div class="row g2">
+      <div class="mock" style="flex:1.2">
+        <div class="tw"><i></i><i></i><i></i></div>
+        <div style="border:1px solid var(--line);border-radius:11px;padding:10px 13px;color:var(--mut);font-size:14.5px;margin-bottom:14px">🔍 搜索词 / 中文 / 英文</div>
+        <div style="margin-bottom:14px">
+          <span class="pill on">全部</span><span class="pill">基础概念</span><span class="pill">提示技巧</span><span class="pill">智能体</span><span class="pill">进阶原理</span><span class="pill">感知创作</span><span class="pill">算力硬件</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div style="border:1px solid var(--line);border-radius:12px;padding:11px;font-size:14px"><b>Prompt</b><br><span style="color:var(--mut)">提示词 · 入门</span></div>
+          <div style="border:1px solid var(--line);border-radius:12px;padding:11px;font-size:14px"><b>Agent</b><br><span style="color:var(--mut)">智能体 · 进阶</span></div>
+        </div>
+        <div style="margin-top:14px;font-size:14px;color:var(--mut)">我的掌握度　基础概念 <b style="color:var(--pri)">8/22</b><div class="bar2"><i style="width:36%"></i></div></div>
+      </div>
+      <div class="c" style="flex:1">
+        <div class="lb"><span class="dot"></span>它的课堂价值</div>
+        <p>· 支持<b>英文、中文、别名</b>三种搜法</p>
+        <p style="margin-top:9px">· 六个分类 + 入门/进阶双维度筛选</p>
+        <p style="margin-top:9px">· 可收藏，组内可见“哪几个词全班普遍没掌握”</p>
+        <p style="margin-top:9px">· 可作为<b>自主探究环节</b>的资料工具</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 两件隐藏的事 -->
+<section class="slide">
+  <div class="kicker">09 · 藏在后面的两件事</div>
+  <h2>它不只好看，还真的会“盯着你复习”</h2>
+  <p class="sub">这是把这个 App 和一堆静态词表区分开的关键。</p>
+  <div class="body">
+    <div class="grid g2">
+      <div class="c" style="border-color:#ecd9ff;background:linear-gradient(100deg,#f7f4ff,#fdf9ff)">
+        <div class="lb"><span class="dot" style="background:var(--vio)"></span>记忆曲线复习</div>
+        <p style="font-size:17px;margin-bottom:10px">每天首页会挑出<b>今天该复习的词</b>。</p>
+        <p>学生自评「记得 / 有点模糊 / 忘了」→ 系统据此推后下次出现的时间。答得好就间隔拉长，答得差第二天再来。</p>
+        <p style="margin-top:12px;color:var(--mut)">破解“今天背完下周忘”的老问题。</p>
+      </div>
+      <div class="c" style="border-color:#cfeee2;background:#f6fdfa">
+        <div class="lb"><span class="dot" style="background:var(--gre)"></span>9 步使用导览</div>
+        <p style="font-size:17px;margin-bottom:10px">第一次打开<b>自动带一遍</b>。</p>
+        <p>每一步把对应区域高亮框出来，配一句话说明。手机上、电脑上、深浅色下都验证过定位准确。</p>
+        <p style="margin-top:12px;color:var(--mut)">老师不用花半节课讲“怎么操作”。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 教育依据 -->
+<section class="slide">
+  <div class="kicker">10 · 为什么这样设计</div>
+  <h2>三个教育学的理由</h2>
+  <p class="sub">我们尽量让每一个交互，都能说清它是为了什么。</p>
+  <div class="body">
+    <div class="grid g3">
+      <div class="c"><div class="lb"><span class="dot"></span>① 降低认知负荷</div><p>一次只呈现一个概念 + 一个比方，避免“定义套定义”。名词卡池一次一张卡，就是这个道理。</p><p style="margin-top:12px;color:var(--mut)">对应：抽卡、翻译机</p></div>
+      <div class="c"><div class="lb"><span class="dot"></span>② 情境学习</div><p>知识在它被使用的情境里才记得住。所以每个名词都配真实场景，最后还要到场景配对里“反过来选”。</p><p style="margin-top:12px;color:var(--mut)">对应：翻译机举例、场景配对</p></div>
+      <div class="c"><div class="lb"><span class="dot"></span>③ 间隔重复</div><p>遗忘先快后慢。与其考前突击，不如在快忘的时候刚好再出现一次。</p><p style="margin-top:12px;color:var(--mut)">对应：今日复习、掌握度统计</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 课堂怎么用 -->
+<section class="slide">
+  <div class="kicker">11 · 课堂怎么用</div>
+  <h2>一节 45 分钟的课上，它出现在五个地方</h2>
+  <p class="sub">配套教案与可打印导学案已同步提供。</p>
+  <div class="body">
+    <div class="time">
+      <div style="background:linear-gradient(120deg,#5a6bff,#6f7dff)"><span>5′</span>情境导入<br>屏幕上的 AI 广告词</div>
+      <div style="background:linear-gradient(120deg,#6f7dff,#7c8bff)"><span>12′</span>抽卡认词<br>填任务单表 1</div>
+      <div style="background:linear-gradient(120deg,#7c8bff,#8b5cf6)"><span>8′</span>画套娃图<br>理清包含关系</div>
+      <div style="background:linear-gradient(120deg,#8b5cf6,#a06ef0)"><span>12′</span>场景配对<br>独立闯关 → 错因讨论</div>
+      <div style="background:linear-gradient(120deg,#a06ef0,#b580ea)"><span>5′</span>互评量表<br>同桌交换打分</div>
+      <div style="background:linear-gradient(120deg,#b580ea,#c98ce4)"><span>3′</span>小结作业<br>讲给家人听</div>
+    </div>
+    <div class="grid g2" style="margin-top:24px">
+      <div class="c"><div class="lb"><span class="dot"></span>课前准备</div><p>把访问链接做成二维码放进板书；每台设备提前打开一次。断网也不怕——App 是<b>离线可用</b>的单文件。</p></div>
+      <div class="c"><div class="lb"><span class="dot"></span>评价怎么落地</div><p>App 自动给出<b>配对题得分</b>；任务单完成互评两项；教师观察学生能否用<b>自己的话</b>复述——三项合起来就是本节课的评价证据。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 数据 -->
+<section class="slide">
+  <div class="kicker">12 · 它是怎么做出来的</div>
+  <h2>从一个想法到能上课，中间是 27 个版本</h2>
+  <p class="sub">全过程留有可点开回溯的快照：ai-term-learning.app.workbuddy.host/history</p>
+  <div class="body">
+    <div class="grid g4" style="margin-bottom:20px">
+      <div class="c"><div class="num">131<small>条</small></div><p style="margin-top:8px">人工撰写与校对的词条</p></div>
+      <div class="c"><div class="num">27<small>版</small></div><p style="margin-top:8px">迭代版本，16 个可点开</p></div>
+      <div class="c"><div class="num">1.4<small>MB</small></div><p style="margin-top:8px">单文件成品，图片全内置</p></div>
+      <div class="c"><div class="num">400+<small>项</small></div><p style="margin-top:8px">自动化验收断言</p></div>
+    </div>
+    <div class="grid g2">
+      <div class="c"><div class="lb"><span class="dot"></span>技术上做对了什么</div><p>原生 HTML/CSS/JS，<b>零框架零依赖</b>；图片以 data URI 内嵌所以离线可用；数据只存本机 localStorage，<b>不上传不追踪</b>；深浅色双主题 + 手机平板桌面三档响应式。</p></div>
+      <div class="c"><div class="lb"><span class="dot"></span>公开谈也没关系的两个坑</div><p>① 导览高亮框“跟不准”，真凶是全局平滑滚动导致量到过期坐标；② 只补了纵向忘了横向，右侧标签一直没进框。两个都靠数据定位，不靠猜。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 反思 -->
+<section class="slide">
+  <div class="kicker">13 · 我们的反思</div>
+  <h2>我们理解的“人机协同”</h2>
+  <div class="body">
+    <div class="c" style="border-color:#ecd9ff;background:linear-gradient(100deg,#f7f4ff,#fdf9ff);padding:44px 46px">
+      <p class="q" style="margin:0 0 20px">设计这个 App，不是为了用 AI 取代老师。</p>
+      <p class="q" style="margin:0 0 20px"><b>AI 负责把复杂概念翻译成孩子能懂的话，<br>老师负责引导孩子去动手使用这些概念。</b></p>
+      <p class="q" style="margin:0;color:var(--mut)">工具降低的是认知门槛，不是教师的价值。</p>
+    </div>
+    <div class="grid g3" style="margin-top:22px">
+      <div class="c"><div class="lb"><span class="dot"></span>还没做好的</div><p>词条配图目前仍是彩色矢量风格，未做风格化统一重绘。</p></div>
+      <div class="c"><div class="lb"><span class="dot"></span>下一步</div><p>增加班级数据看板，让老师看到全班普遍卡在哪几个词。</p></div>
+      <div class="c"><div class="lb"><span class="dot"></span>验证方式</div><p>在真实课堂上用一节完整课时跑一遍，按教案反思条目复盘。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 结尾 -->
+<section class="slide">
+  <div class="body cover">
+    <div class="kicker">Thanks</div>
+    <h1 style="font-size:56px">谢谢老师，<br>欢迎现在就<span class="grad">抽一张试试</span></h1>
+    <div class="badges">
+      <span class="badge">在线体验：<b>ai-term-learning.app.workbuddy.host</b></span>
+      <span class="badge">版本演变：<b>…/history</b></span>
+      <span class="badge">源码与教案：<b>本项目 GitHub 仓库</b></span>
+    </div>
+    <div><span class="tag">Docs 目录含：完整教案 · 学生导学案 · 项目说明 · 技术实现 · 验收报告</span></div>
+  </div>
+</section>
+
+</div></div>
+
+<div class="hud">
+  <button id="prev">← 上一页</button>
+  <span id="cnt">1 / 15</span>
+  <button id="next">下一页 →</button>
+</div>
+<div class="tip">← → 翻页 · 空格下一页 · F 全屏 · S 导出说明（浏览器 Ctrl+P 可逐页打印）</div>
+
+<script>
+(function(){
+  var slides = [].slice.call(document.querySelectorAll('.slide'));
+  var i = 0, deck = document.getElementById('deck'),
+      cnt = document.getElementById('cnt'), bar = document.getElementById('bar');
+  function fit(){
+    var s = Math.min(window.innerWidth/1280, window.innerHeight/720, 1.6);
+    document.documentElement.style.setProperty('--sc', s);
+  }
+  function go(n){
+    i = Math.max(0, Math.min(slides.length-1, n));
+    slides.forEach(function(el,k){ el.classList.toggle('on', k===i); });
+    cnt.textContent = (i+1) + ' / ' + slides.length;
+    bar.style.width = ((i+1)/slides.length*100) + '%';
+    try{ location.hash = 'p'+(i+1); }catch(e){}
+  }
+  document.addEventListener('keydown', function(e){
+    var k = e.key;
+    if(k==='ArrowRight'||k==='PageDown'||k===' '||k==='Enter'){ e.preventDefault(); go(i+1); }
+    else if(k==='ArrowLeft'||k==='PageUp'||k==='Backspace'){ e.preventDefault(); go(i-1); }
+    else if(k==='Home'){ go(0); } else if(k==='End'){ go(slides.length-1); }
+    else if(k==='f'||k==='F'){
+      if(!document.fullscreenElement){ document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); }
+      else { document.exitFullscreen && document.exitFullscreen(); }
+    }
+  });
+  document.getElementById('prev').onclick = function(){ go(i-1); };
+  document.getElementById('next').onclick = function(){ go(i+1); };
+  document.addEventListener('click', function(e){
+    if(e.target.closest('.hud')) return;
+    go(e.clientX < window.innerWidth*0.32 ? i-1 : i+1);
+  });
+  window.addEventListener('resize', fit);
+  fit(); go(0);
+})();
+</script>
+</body>
+</html>
